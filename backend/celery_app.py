@@ -1,3 +1,9 @@
+from dotenv import load_dotenv
+import os
+
+# Load .env from the repo root (one level up from backend/)
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 from celery import Celery
 from app.core.config import settings
 from app.tasks.scheduler import CELERYBEAT_SCHEDULE

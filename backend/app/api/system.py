@@ -31,3 +31,9 @@ def pause_all(db: Session = Depends(get_db)):
     updated = db.query(Campaign).filter(Campaign.status == "active").update({"status": "paused"})
     db.commit()
     return _resp({"campaigns_paused": updated}, f"Paused {updated} campaign(s)")
+
+@router.post("/run-controller")
+def run_controller(db: Session = Depends(get_db)):
+    from app.tasks.agent_tasks import run_controller_agent
+    task = run_controller_agent.delay()
+    return _resp({"task_id": task.id}, "Controller Agent triggered")

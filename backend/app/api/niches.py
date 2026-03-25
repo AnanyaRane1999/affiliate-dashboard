@@ -59,3 +59,21 @@ def get_business_case(niche_id: int, db: Session = Depends(get_db)):
                   "recommended_budget": niche.recommended_budget, "score": niche.score,
                   "go_no_go": niche.go_no_go, "estimated_monthly_revenue": None,
                   "estimated_roas": None, "notes": "Populated by Business Case Agent."}, "Business case fetched")
+
+@router.post("/{niche_id}/run-business-case")
+def run_business_case(niche_id: int, db: Session = Depends(get_db)):
+    niche = db.query(Niche).filter(Niche.id == niche_id).first()
+    if not niche:
+        raise HTTPException(status_code=404, detail="Niche not found")
+    from app.tasks.agent_tasks import run_business_case_agent
+    task = run_business_case_agent.delay(niche_id=niche_id)
+    return _resp({"task_id": task.id, "niche_id": niche_id}, "Business Case Agent triggered")
+
+@router.post("/{niche_id}/publish")
+def publish_niche_site(niche_id: int, db: Session = Depends(get_db)):
+    niche = db.query(Niche).filter(Niche.id == niche_id).first()
+    if not niche:
+        raise HTTPException(status_code=404, detail="Niche not found")
+    from app.tasks.agent_tasks import run_site_builder_agent
+    task = run_site_builder_agent.delay(niche_id=niche_id)
+    return _resp({"task_id": task.id, "niche_id": niche_id}, "Site Builder Agent triggered")
