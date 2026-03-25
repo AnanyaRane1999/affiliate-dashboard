@@ -1,3 +1,4 @@
+import { Site, Page } from "@/types";
 import { Niche, AgentLog, BusinessCase } from "@/types";
 
 export const MOCK_NICHES: Niche[] = [
@@ -208,3 +209,146 @@ export const MOCK_BUSINESS_CASE: BusinessCase = {
   recommended_budget: 150,
   go_no_go: true,
 };
+
+// ─── REAL API ENDPOINT PATHS (Varun's Backend) ───────────────────────────────
+// Use these when Varun's backend is running on http://localhost:8000
+
+export const API_ROUTES = {
+  // Niches
+  niches:               "/api/v1/niches",
+  nicheById:            (id: number) => `/api/v1/niches/${id}`,
+  nicheApprove:         (id: number) => `/api/v1/niches/${id}/approve`,
+  nicheReject:          (id: number) => `/api/v1/niches/${id}/reject`,
+  nicheBusinessCase:    (id: number) => `/api/v1/niches/${id}/business-case`,
+  nicheDiscover:        "/api/v1/niches/discover",
+
+  // Sites
+  sites:                "/api/v1/sites",
+  sitePages:            (id: number) => `/api/v1/sites/${id}/pages`,
+  sitePublish:          (id: number) => `/api/v1/sites/${id}/publish`,
+
+  // Links
+  links:                (nicheId: number) => `/api/v1/links/${nicheId}`,
+  linksRefresh:         (nicheId: number) => `/api/v1/links/${nicheId}/refresh`,
+
+  // Campaigns
+  campaigns:            "/api/v1/campaigns",
+  campaignPause:        (id: number) => `/api/v1/campaigns/${id}/pause`,
+  campaignResume:       (id: number) => `/api/v1/campaigns/${id}/resume`,
+
+  // Alerts
+  alerts:               "/api/v1/alerts",
+  alertResolve:         (id: number) => `/api/v1/alerts/${id}/resolve`,
+
+  // Approvals
+  approvals:            "/api/v1/approvals",
+  approvalApprove:      (id: number) => `/api/v1/approvals/${id}/approve`,
+  approvalReject:       (id: number) => `/api/v1/approvals/${id}/reject`,
+
+  // Agent
+  agentLogs:            "/api/v1/agent-logs",
+  agentStatus:          "/api/v1/system/agent-status",
+  budgetAllocations:    "/api/v1/budget-allocations",
+  pauseAll:             "/api/v1/system/pause-all",
+  runController:        "/api/v1/system/run-controller",
+};
+
+// ─── MOCK SITES DATA ─────────────────────────────────────────────────────────
+
+export const MOCK_SITES: Site[] = [
+  {
+    id: 1,
+    niche_id: 1,
+    niche_name: "Kitesurfen",
+    subdomain: "kitesurfen.starterkit.de",
+    status: "live",
+    page_count: 5,
+    last_published: "2026-03-23T10:00:00Z",
+    traffic_30d: 4200,
+    created_at: "2026-03-20T10:00:00Z",
+  },
+  {
+    id: 2,
+    niche_id: 2,
+    niche_name: "Camping Anfänger",
+    subdomain: "camping.starterkit.de",
+    status: "live",
+    page_count: 4,
+    last_published: "2026-03-22T10:00:00Z",
+    traffic_30d: 3800,
+    created_at: "2026-03-21T10:00:00Z",
+  },
+  {
+    id: 3,
+    niche_id: 3,
+    niche_name: "Fotografie",
+    subdomain: "fotografie.starterkit.de",
+    status: "building",
+    page_count: 0,
+    last_published: null,
+    traffic_30d: 0,
+    created_at: "2026-03-23T10:00:00Z",
+  },
+  {
+    id: 4,
+    niche_id: 4,
+    niche_name: "Yoga Einsteiger",
+    subdomain: "yoga.starterkit.de",
+    status: "draft",
+    page_count: 2,
+    last_published: null,
+    traffic_30d: 0,
+    created_at: "2026-03-23T10:00:00Z",
+  },
+];
+
+export const MOCK_PAGES: Page[] = [
+  {
+    id: 1,
+    niche_id: 1,
+    page_type: "landing",
+    url: "https://kitesurfen.starterkit.de",
+    content: "<h1>Kitesurfen Anfänger Guide</h1><p>Alles was du für den Einstieg ins Kitesurfen brauchst. Von der Ausrüstung bis zum ersten Kurs — wir haben die besten Empfehlungen für dich zusammengestellt.</p>",
+    meta_title: "Kitesurfen Anfänger — Starter Kit & Guide 2026",
+    meta_description: "Dein kompletter Kitesurfen Starter Guide. Die besten Produkte, Kurse und Tipps für Anfänger.",
+    is_published: true,
+    published_at: "2026-03-23T10:00:00Z",
+    affiliate_link_count: 8,
+  },
+  {
+    id: 2,
+    niche_id: 1,
+    page_type: "beginner_guide",
+    url: "https://kitesurfen.starterkit.de/anfaenger-guide",
+    content: "<h1>Kitesurfen lernen — Der ultimative Anfänger Guide</h1><p>Schritt für Schritt zum ersten erfolgreichen Kitesurfen. Lerne die Grundlagen, die richtige Ausrüstung und die besten Spots in Deutschland.</p>",
+    meta_title: "Kitesurfen lernen — Anfänger Guide 2026",
+    meta_description: "Lerne Kitesurfen von Grund auf. Tipps, Tricks und die beste Ausrüstung für Einsteiger.",
+    is_published: true,
+    published_at: "2026-03-23T10:00:00Z",
+    affiliate_link_count: 5,
+  },
+  {
+    id: 3,
+    niche_id: 1,
+    page_type: "starter_kit",
+    url: "https://kitesurfen.starterkit.de/starter-kit",
+    content: "<h1>Das perfekte Kitesurfen Starter Kit</h1><p>Wir haben die 8 besten Produkte für Kitesurfen Anfänger ausgewählt. Qualität getestet, Preise verglichen.</p>",
+    meta_title: "Kitesurfen Starter Kit — Top 8 Produkte 2026",
+    meta_description: "Das beste Kitesurfen Starter Kit für Anfänger. Getestete Produkte mit Amazon Bewertungen.",
+    is_published: true,
+    published_at: "2026-03-23T10:00:00Z",
+    affiliate_link_count: 8,
+  },
+  {
+    id: 4,
+    niche_id: 2,
+    page_type: "landing",
+    url: "https://camping.starterkit.de",
+    content: "<h1>Camping Anfänger — Dein Starter Guide</h1><p>Alles was du für dein erstes Camping Abenteuer brauchst. Die besten Produkte für Einsteiger.</p>",
+    meta_title: "Camping Anfänger — Starter Kit & Guide 2026",
+    meta_description: "Dein kompletter Camping Starter Guide für Anfänger. Zelt, Schlafsack und mehr.",
+    is_published: true,
+    published_at: "2026-03-22T10:00:00Z",
+    affiliate_link_count: 6,
+  },
+];

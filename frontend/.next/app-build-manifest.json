@@ -16,20 +16,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/dashboard/niches/page": [
+    "/dashboard/sites/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/niches/page.js"
+      "static/chunks/app/dashboard/sites/page.js"
     ],
-    "/dashboard/activity/page": [
+    "/dashboard/sites/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/activity/page.js"
-    ],
-    "/dashboard/niches/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/niches/[id]/page.js"
+      "static/chunks/app/dashboard/sites/[id]/page.js"
     ]
   }
 }

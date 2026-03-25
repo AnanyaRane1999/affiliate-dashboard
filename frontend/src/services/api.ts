@@ -8,24 +8,20 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-api.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 503) {
-      console.error("Backend is down — Varun's FastAPI server is not running");
-    }
-    if (error.response?.status === 404) {
-      console.error("Endpoint not found — check with Varun if this API is ready");
+      console.error("Backend is down!");
     }
     return Promise.reject(error);
   }
 );
+
+// Helper to extract data from Varun's response format
+// All responses return: { success, data, message, timestamp }
+export function extractData<T>(response: { data: { success: boolean; data: T } }): T {
+  return response.data.data;
+}
 
 export default api;
