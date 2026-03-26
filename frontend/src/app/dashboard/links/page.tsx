@@ -28,6 +28,7 @@ export default function LinksPage() {
     queryFn: async () => {
       try {
         const res = await api.get("/api/v1/links/all");
+        //const res = await api.get("/api/v1/links/1");
         return extractData<AffiliateLink[]>(res);
       } catch {
         return MOCK_AFFILIATE_LINKS;

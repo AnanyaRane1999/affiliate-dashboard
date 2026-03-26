@@ -38,14 +38,14 @@ export default function SitesPage() {
   const displaySites = sites || MOCK_SITES;
 
   const filtered = displaySites.filter((s) => {
-    const matchSearch = s.niche_name.toLowerCase().includes(search.toLowerCase()) ||
-      s.subdomain.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (s.niche_name || s.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.subdomain || "").toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
   const liveSites = displaySites.filter((s) => s.status === "live").length;
-  const totalTraffic = displaySites.reduce((a, s) => a + s.traffic_30d, 0);
+  const totalTraffic = displaySites.reduce((a, s) => a + (s.traffic_30d || 0), 0);
 
   return (
     <div className="flex flex-col gap-6">

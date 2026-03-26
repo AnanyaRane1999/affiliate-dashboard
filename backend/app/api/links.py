@@ -18,6 +18,28 @@ def _l(lnk):
             "rating": lnk.rating, "status": lnk.status,
             "last_checked": lnk.last_checked.isoformat() if lnk.last_checked else None}
 
+@router.get("/all")
+def list_all_links(db: Session = Depends(get_db)):
+    """Get all affiliate links across all niches."""
+    from app.models.niche import Niche
+    links = db.query(AffiliateLink).all()
+    result = []
+    for lnk in links:
+        niche = db.query(Niche).filter(Niche.id == lnk.niche_id).first()
+        result.append({
+            "id": lnk.id,
+            "niche_id": lnk.niche_id,
+            "niche_name": niche.name if niche else None,
+            "product_name": lnk.product_name,
+            "asin": lnk.asin,
+            "link_url": lnk.link_url,
+            "price": lnk.price,
+            "rating": lnk.rating,
+            "status": lnk.status,
+            "last_checked": lnk.last_checked.isoformat() if lnk.last_checked else None,
+        })
+    return _resp(result, "All affiliate links fetched")
+
 @router.get("/{niche_id}")
 def list_links(niche_id: int, db: Session = Depends(get_db)):
     if not db.query(Niche).filter(Niche.id == niche_id).first():

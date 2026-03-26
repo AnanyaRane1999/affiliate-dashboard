@@ -133,18 +133,18 @@ export default function BudgetPage() {
 
               <div className="flex items-center justify-between">
                 <span className="text-gray-500 text-xs">
-                  {alloc.percentage_used.toFixed(1)}% used
+                  {(alloc.utilization_pct || 0).toFixed(1)}% used
                 </span>
                 <span className="text-green-400 text-xs font-medium">
-                  €{alloc.remaining.toFixed(2)} remaining
+                  €{(alloc.remaining || (alloc.allocated - alloc.spent)).toFixed(2)} remaining
                 </span>
               </div>
 
-              {alloc.percentage_used >= 80 && (
+              {((alloc.utilization_pct || 0) >= 80) && (
                 <div className="flex items-center gap-2 mt-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg px-3 py-2">
                   <AlertTriangle size={14} className="text-yellow-400 shrink-0" />
                   <p className="text-yellow-400 text-xs">
-                    {alloc.percentage_used >= 95
+                    {(alloc.utilization_pct || 0) >= 95
                       ? "Budget critically low! Consider increasing allocation."
                       : "Budget over 80% used. Monitor closely."}
                   </p>

@@ -77,6 +77,7 @@ export interface Site {
   id: number;
   niche_id: number;
   niche_name: string;
+  name?: string;
   subdomain: string;
   status: "live" | "draft" | "failed" | "building";
   page_count: number;
@@ -156,6 +157,7 @@ export interface BudgetAllocation {
   allocated: number;
   spent: number;
   remaining: number;
+  utilization_pct?: number;      // ← added this
   percentage_used: number;
   updated_at: string;
 }
