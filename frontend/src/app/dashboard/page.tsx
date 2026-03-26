@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MOCK_NICHES, MOCK_AGENT_LOGS } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import api, { extractData } from "@/services/api";
+import { API_ROUTES } from "@/lib/mock-data";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { NicheStatus } from "@/types";
+import { Niche, AgentLog, NicheStatus } from "@/types";
 import {
   TrendingUp, TrendingDown, Globe, Activity,
   Megaphone, AlertTriangle,
@@ -12,42 +14,85 @@ import {
 export default function DashboardPage() {
   const router = useRouter();
 
-  const liveNiches = MOCK_NICHES.filter((n) => n.status === "live");
-  const totalTraffic = MOCK_NICHES.reduce((a, n) => a + (n.traffic || 0), 0);
-  const totalRevenue = MOCK_NICHES.reduce((a, n) => a + (n.estimated_revenue || 0), 0);
-  const recentLogs = MOCK_AGENT_LOGS.slice(0, 4);
+  // Fetch real niches from backend
+  const { data: niches } = useQuery({
+    queryKey: ["niches"],
+    queryFn: async () => {
+      const res = await api.get(API_ROUTES.niches);
+      return extractData<Niche[]>(res);
+    },
+    refetchInterval: 30000,
+  });
+
+  // Fetch real agent logs from backend
+  const { data: agentLogs } = useQuery({
+    queryKey: ["agent-logs"],
+    queryFn: async () => {
+      const res = await api.get(API_ROUTES.agentLogs);
+      return extractData<AgentLog[]>(res);
+    },
+    refetchInterval: 30000,
+  });
+
+  // Fetch real alerts count
+  const { data: alerts } = useQuery({
+    queryKey: ["alerts"],
+    queryFn: async () => {
+      const res = await api.get(API_ROUTES.alerts);
+      return extractData<any[]>(res);
+    },
+    refetchInterval: 30000,
+  });
+
+  // Fetch budget allocations
+  const { data: budgets } = useQuery({
+    queryKey: ["budget-allocations"],
+    queryFn: async () => {
+      const res = await api.get(API_ROUTES.budgetAllocations);
+      return extractData<any[]>(res);
+    },
+    refetchInterval: 30000,
+  });
+
+  const displayNiches = niches || [];
+  const displayLogs = agentLogs || [];
+
+  const liveNiches = displayNiches.filter((n) => n.status === "live" || n.status === "approved");
+  const totalBudget = budgets?.reduce((a: number, b: any) => a + (b.allocated || 0), 0) || 0;
+  const totalSpent = budgets?.reduce((a: number, b: any) => a + (b.spent || 0), 0) || 0;
+  const unresolvedAlerts = alerts?.length || 0;
 
   const KPI_CARDS = [
     {
-      label: "Total Traffic",
-      value: totalTraffic.toLocaleString(),
-      change: "+12.4%",
+      label: "Total Niches",
+      value: displayNiches.length.toString(),
+      change: `${liveNiches.length} approved`,
       up: true,
-      icon: TrendingUp,
+      icon: Globe,
       color: "text-blue-400",
     },
     {
       label: "Ad Spend",
-      value: "€842",
-      change: "-3.2%",
-      up: false,
+      value: `€${totalSpent.toFixed(0)}`,
+      change: `of €${totalBudget.toFixed(0)} allocated`,
+      up: true,
       icon: Megaphone,
       color: "text-purple-400",
     },
     {
-      label: "Est. Revenue",
-      value: `€${totalRevenue.toLocaleString()}`,
-      change: "+18.7%",
-      up: true,
-      icon: TrendingUp,
-      color: "text-green-400",
+      label: "Active Alerts",
+      value: unresolvedAlerts.toString(),
+      change: unresolvedAlerts > 0 ? "needs attention" : "all clear",
+      up: unresolvedAlerts === 0,
+      icon: AlertTriangle,
+      color: unresolvedAlerts > 0 ? "text-red-400" : "text-green-400",
     },
     {
       label: "Active Niches",
       value: liveNiches.length.toString(),
-      change: "+2 this week",
+      change: `${displayNiches.length} total discovered`,
       up: true,
-      icon: Globe,
+      icon: TrendingUp,
       color: "text-orange-400",
     },
   ];
@@ -84,7 +129,6 @@ export default function DashboardPage() {
               <span className={`text-xs ${kpi.up ? "text-green-400" : "text-red-400"}`}>
                 {kpi.change}
               </span>
-              <span className="text-xs text-gray-500">vs last week</span>
             </div>
           </div>
         ))}
@@ -93,7 +137,7 @@ export default function DashboardPage() {
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Recent Niches */}
+        {/* Top Niches */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
             <div className="flex items-center gap-2">
@@ -108,32 +152,36 @@ export default function DashboardPage() {
             </button>
           </div>
           <div className="divide-y divide-gray-800">
-            {MOCK_NICHES.slice(0, 4).map((niche) => (
-              <div
-                key={niche.id}
-                className="flex items-center justify-between px-6 py-3 hover:bg-gray-800/30 cursor-pointer transition-colors"
-                onClick={() => router.push(`/dashboard/niches/${niche.id}`)}
-              >
-                <div>
-                  <p className="text-white text-sm font-medium">{niche.name}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">
-                    Score: {niche.score?.toFixed(1)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {niche.estimated_revenue ? (
-                    <span className="text-green-400 text-sm font-medium">
-                      €{niche.estimated_revenue.toLocaleString()}
-                    </span>
-                  ) : null}
-                  <StatusBadge status={niche.status as NicheStatus} />
-                </div>
+            {displayNiches.length === 0 ? (
+              <div className="px-6 py-8 text-center text-gray-500 text-sm">
+                Loading niches from backend...
               </div>
-            ))}
+            ) : (
+              displayNiches
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
+                .slice(0, 5)
+                .map((niche) => (
+                  <div
+                    key={niche.id}
+                    className="flex items-center justify-between px-6 py-3 hover:bg-gray-800/30 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/dashboard/niches/${niche.id}`)}
+                  >
+                    <div>
+                      <p className="text-white text-sm font-medium">{niche.name}</p>
+                      <p className="text-gray-500 text-xs mt-0.5">
+                        Score: {niche.score?.toFixed(2)} | Budget: €{niche.recommended_budget}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={niche.status as NicheStatus} />
+                    </div>
+                  </div>
+                ))
+            )}
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Agent Activity */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
             <div className="flex items-center gap-2">
@@ -148,32 +196,35 @@ export default function DashboardPage() {
             </button>
           </div>
           <div className="divide-y divide-gray-800">
-            {recentLogs.map((log) => (
-              <div key={log.id} className="flex items-start gap-3 px-6 py-3">
-                <span className="text-base mt-0.5">
-                  {log.status === "success" ? "✅" : log.status === "error" ? "❌" : "⚠️"}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
-                    {log.action}
-                  </p>
-                  <p className="text-gray-500 text-xs mt-0.5 truncate">
-                    {log.result}
-                  </p>
-                </div>
+            {displayLogs.length === 0 ? (
+              <div className="px-6 py-8 text-center text-gray-500 text-sm">
+                Loading agent logs from backend...
               </div>
-            ))}
+            ) : (
+              displayLogs.slice(0, 5).map((log: any) => (
+                <div key={log.id} className="flex items-start gap-3 px-6 py-3">
+                  <span className="text-base mt-0.5">✅</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">
+                      {log.agent_name} — {log.action}
+                    </p>
+                    <p className="text-gray-500 text-xs mt-0.5 truncate">
+                      {log.result_summary || log.input_summary || "—"}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
       </div>
 
-      {/* Warning banner */}
-      <div className="flex items-center gap-3 bg-yellow-900/20 border border-yellow-700/50 rounded-xl px-5 py-4">
-        <AlertTriangle size={18} className="text-yellow-400 shrink-0" />
-        <p className="text-yellow-400 text-sm">
-          <strong>Mock data active</strong> — Waiting for Varun's backend API.
-          Screens will auto-update when endpoints are live.
+      {/* Live data indicator */}
+      <div className="flex items-center gap-3 bg-green-900/20 border border-green-700/50 rounded-xl px-5 py-4">
+        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+        <p className="text-green-400 text-sm">
+          <strong>Live data active</strong> — Connected to backend API. Data refreshes every 30 seconds.
         </p>
       </div>
     </div>
