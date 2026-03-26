@@ -7,6 +7,13 @@ export type NicheStatus =
   | "live"
   | "paused";
 
+export type PageType =
+  | "landing"
+  | "beginner_guide"
+  | "starter_kit"
+  | "faq"
+  | "comparison";
+
 export type LinkStatus = "active" | "out_of_stock" | "broken" | "stale";
 export type CampaignStatus = "draft" | "active" | "paused" | "ended";
 export type AlertSeverity = "info" | "warning" | "critical";
@@ -29,12 +36,14 @@ export interface Niche {
   name: string;
   subdomain: string | null;
   score: number | null;
-  status: NicheStatus;
-  go_no_go: boolean | null;
-  recommended_budget: number | null;
+  demand_score: number | null;
+  competition_score: number | null;
   cpc_estimate: number | null;
   aov_estimate: number | null;
   commission_rate: number | null;
+  status: NicheStatus;
+  go_no_go: boolean | null;
+  recommended_budget: number | null;
   created_at: string;
   updated_at: string;
   traffic?: number;
@@ -74,6 +83,19 @@ export interface Site {
   last_published: string | null;
   traffic_30d: number;
   created_at: string;
+}
+
+export interface Page {
+  id: number;
+  niche_id: number;
+  page_type: PageType;
+  url: string | null;
+  content: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  is_published: boolean;
+  published_at: string | null;
+  affiliate_link_count?: number;
 }
 
 export interface AffiliateLink {

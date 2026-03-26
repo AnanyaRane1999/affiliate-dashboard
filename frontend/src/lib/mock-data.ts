@@ -1,5 +1,4 @@
-import { Site, Page } from "@/types";
-import { Niche, AgentLog, BusinessCase } from "@/types";
+import { Niche, AgentLog, BusinessCase, Site, Page, AffiliateLink, Campaign, BudgetAllocation } from "@/types";
 
 export const MOCK_NICHES: Niche[] = [
   {
@@ -350,5 +349,113 @@ export const MOCK_PAGES: Page[] = [
     is_published: true,
     published_at: "2026-03-22T10:00:00Z",
     affiliate_link_count: 6,
+  },
+];
+
+// ─── MOCK AFFILIATE LINKS ─────────────────────────────────────────────────────
+export const MOCK_AFFILIATE_LINKS: AffiliateLink[] = [
+  {
+    id: 1, niche_id: 1, niche_name: "Kitesurfen",
+    product_name: "Cabrinha Switchblade Kite 12m",
+    asin: "B08XYZ1234", link_url: "https://amazon.de/dp/B08XYZ1234?tag=starterkit-21",
+    image_url: null, price_eur: 899.99, rating: 4.7, review_count: 234,
+    status: "active", last_checked: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 2, niche_id: 1, niche_name: "Kitesurfen",
+    product_name: "North Kiteboarding Explore Board",
+    asin: "B09ABC5678", link_url: "https://amazon.de/dp/B09ABC5678?tag=starterkit-21",
+    image_url: null, price_eur: 549.00, rating: 4.5, review_count: 189,
+    status: "active", last_checked: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 3, niche_id: 1, niche_name: "Kitesurfen",
+    product_name: "Mystic Majestic X Harness",
+    asin: "B07DEF9012", link_url: "https://amazon.de/dp/B07DEF9012?tag=starterkit-21",
+    image_url: null, price_eur: 189.95, rating: 4.8, review_count: 412,
+    status: "active", last_checked: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 4, niche_id: 2, niche_name: "Camping Anfänger",
+    product_name: "Coleman Sundome 4 Personen Zelt",
+    asin: "B00XYZ4321", link_url: "https://amazon.de/dp/B00XYZ4321?tag=starterkit-21",
+    image_url: null, price_eur: 129.99, rating: 4.4, review_count: 1823,
+    status: "active", last_checked: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 5, niche_id: 2, niche_name: "Camping Anfänger",
+    product_name: "Deuter Schlafsack Orbit +5",
+    asin: "B01GHI7890", link_url: "https://amazon.de/dp/B01GHI7890?tag=starterkit-21",
+    image_url: null, price_eur: 89.95, rating: 4.6, review_count: 567,
+    status: "out_of_stock", last_checked: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 6, niche_id: 2, niche_name: "Camping Anfänger",
+    product_name: "Campingaz Party Grill 400 CV",
+    asin: "B02JKL3456", link_url: "https://amazon.de/dp/B02JKL3456?tag=starterkit-21",
+    image_url: null, price_eur: 69.99, rating: 4.3, review_count: 892,
+    status: "active", last_checked: "2026-03-24T10:00:00Z",
+  },
+];
+
+// ─── MOCK CAMPAIGNS ───────────────────────────────────────────────────────────
+export const MOCK_CAMPAIGNS: Campaign[] = [
+  {
+    id: 1, niche_id: 1, niche_name: "Kitesurfen",
+    google_campaign_id: "123456789",
+    name: "Kitesurfen Anfänger — Search",
+    status: "active", daily_budget: 5.0,
+    spend_today: 3.24, spend_total: 48.60,
+    ctr: 0.042, cpc: 1.12, roas: 3.8,
+    impressions: 2840, clicks: 119,
+    created_at: "2026-03-20T10:00:00Z",
+  },
+  {
+    id: 2, niche_id: 2, niche_name: "Camping Anfänger",
+    google_campaign_id: "987654321",
+    name: "Camping Starter Kit — Search",
+    status: "active", daily_budget: 4.0,
+    spend_today: 2.87, spend_total: 38.20,
+    ctr: 0.038, cpc: 0.94, roas: 4.2,
+    impressions: 3210, clicks: 122,
+    created_at: "2026-03-21T10:00:00Z",
+  },
+  {
+    id: 3, niche_id: 3, niche_name: "Fotografie",
+    google_campaign_id: "456789123",
+    name: "Fotografie Einsteiger — Search",
+    status: "paused", daily_budget: 6.0,
+    spend_today: 0, spend_total: 12.40,
+    ctr: 0.021, cpc: 1.84, roas: null,
+    impressions: 890, clicks: 19,
+    created_at: "2026-03-22T10:00:00Z",
+  },
+];
+
+// ─── MOCK BUDGET ALLOCATIONS ──────────────────────────────────────────────────
+export const MOCK_BUDGET_ALLOCATIONS: BudgetAllocation[] = [
+  {
+    id: 1, niche_id: 1, niche_name: "Kitesurfen",
+    allocated: 150, spent: 48.60,
+    remaining: 101.40, percentage_used: 32.4,
+    updated_at: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 2, niche_id: 2, niche_name: "Camping Anfänger",
+    allocated: 120, spent: 38.20,
+    remaining: 81.80, percentage_used: 31.8,
+    updated_at: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 3, niche_id: 3, niche_name: "Fotografie",
+    allocated: 200, spent: 12.40,
+    remaining: 187.60, percentage_used: 6.2,
+    updated_at: "2026-03-24T10:00:00Z",
+  },
+  {
+    id: 4, niche_id: 4, niche_name: "Yoga Einsteiger",
+    allocated: 100, spent: 0,
+    remaining: 100, percentage_used: 0,
+    updated_at: "2026-03-24T10:00:00Z",
   },
 ];
