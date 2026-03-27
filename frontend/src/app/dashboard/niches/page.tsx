@@ -7,7 +7,7 @@ import api, { extractData } from "@/services/api";
 import { MOCK_NICHES, API_ROUTES } from "@/lib/mock-data";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { Niche, NicheStatus } from "@/types";
-import { Search, TrendingUp, RefreshCw } from "lucide-react";
+import { Search, TrendingUp, RefreshCw, LayoutGrid, Table2 } from "lucide-react";
 
 const STATUS_FILTERS = [
   { label: "All", value: "all" },
@@ -23,6 +23,7 @@ export default function NichesPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [view, setView] = useState<"table" | "comparison">("table");
 
   const { data: niches, isLoading, refetch } = useQuery({
     queryKey: ["niches"],
@@ -38,7 +39,6 @@ export default function NichesPage() {
   });
 
   const displayNiches = niches || MOCK_NICHES;
-
   const filtered = displayNiches.filter((n) => {
     const matchSearch = n.name.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || n.status === statusFilter;
@@ -47,7 +47,6 @@ export default function NichesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Niche Overview</h1>
@@ -56,6 +55,22 @@ export default function NichesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView("table")}
+              className={`px-3 py-2 text-xs flex items-center gap-1.5 transition-colors ${view === "table" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              <Table2 size={14} />
+              Table
+            </button>
+            <button
+              onClick={() => setView("comparison")}
+              className={`px-3 py-2 text-xs flex items-center gap-1.5 transition-colors ${view === "comparison" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              <LayoutGrid size={14} />
+              Compare
+            </button>
+          </div>
           <button
             onClick={() => refetch()}
             className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
@@ -70,7 +85,6 @@ export default function NichesPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -88,9 +102,7 @@ export default function NichesPage() {
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                statusFilter === f.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                statusFilter === f.value ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
             >
               {f.label}
@@ -99,92 +111,116 @@ export default function NichesPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-800">
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Niche</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Score</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Status</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Subdomain</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Traffic</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Est. Revenue</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
-              {isLoading ? (
-                [...Array(5)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(7)].map((_, j) => (
-                      <td key={j} className="px-6 py-4">
-                        <div className="skeleton h-4 w-24" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : filtered.map((niche) => (
-                <tr key={niche.id} className="hover:bg-gray-800/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="text-white font-medium">{niche.name}</p>
-                      <p className="text-gray-500 text-xs mt-0.5">ID #{niche.id}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 bg-gray-700 rounded-full h-1.5">
-                        <div
-                          className="bg-blue-500 h-1.5 rounded-full"
-                          style={{ width: `${((niche.score || 0) / 10) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-white text-sm font-medium">
-                        {niche.score?.toFixed(1) || "—"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={niche.status as NicheStatus} />
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-gray-400 text-sm">
-                      {niche.subdomain || "—"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-white text-sm">
-                      {niche.traffic ? niche.traffic.toLocaleString() : "—"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-green-400 text-sm font-medium">
-                      {niche.estimated_revenue
-                        ? `€${niche.estimated_revenue.toLocaleString()}`
-                        : "—"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => router.push(`/dashboard/niches/${niche.id}`)}
-                      className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
-                    >
-                      View →
-                    </button>
-                  </td>
+      {view === "table" ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Niche</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Score</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Status</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Subdomain</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Traffic</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Est. Revenue</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {!isLoading && filtered.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No niches found matching your filters.
-            </div>
-          )}
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {isLoading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(7)].map((_, j) => (
+                        <td key={j} className="px-6 py-4"><div className="skeleton h-4 w-24" /></td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  filtered.map((niche) => (
+                    <tr key={niche.id} className="hover:bg-gray-800/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="text-white font-medium">{niche.name}</p>
+                          <p className="text-gray-500 text-xs mt-0.5">ID #{niche.id}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 bg-gray-700 rounded-full h-1.5">
+                            <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${((niche.score || 0) / 10) * 100}%` }} />
+                          </div>
+                          <span className="text-white text-sm font-medium">{niche.score?.toFixed(1) || "—"}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4"><StatusBadge status={niche.status as NicheStatus} /></td>
+                      <td className="px-6 py-4"><span className="text-gray-400 text-sm">{niche.subdomain || "—"}</span></td>
+                      <td className="px-6 py-4"><span className="text-white text-sm">{niche.traffic ? niche.traffic.toLocaleString() : "—"}</span></td>
+                      <td className="px-6 py-4"><span className="text-green-400 text-sm font-medium">{niche.estimated_revenue ? "€" + niche.estimated_revenue.toLocaleString() : "—"}</span></td>
+                      <td className="px-6 py-4">
+                        <button onClick={() => router.push("/dashboard/niches/" + niche.id)} className="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                          View →
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            {!isLoading && filtered.length === 0 && (
+              <div className="text-center py-12 text-gray-500">No niches found.</div>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Niche</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">Score</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">CPC Est.</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">AOV Est.</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">Commission</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">Traffic</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">Revenue</th>
+                  <th className="text-center text-xs font-medium text-gray-400 uppercase px-4 py-4">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {filtered.map((niche) => (
+                  <tr key={niche.id} className="hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => router.push("/dashboard/niches/" + niche.id)}>
+                    <td className="px-6 py-4">
+                      <p className="text-white font-medium">{niche.name}</p>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-blue-400 font-bold">{niche.score?.toFixed(1) || "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-white text-sm">{niche.cpc_estimate ? "€" + niche.cpc_estimate.toFixed(2) : "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-white text-sm">{niche.aov_estimate ? "€" + niche.aov_estimate.toFixed(0) : "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-white text-sm">{niche.commission_rate ? (niche.commission_rate * 100).toFixed(0) + "%" : "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-white text-sm">{niche.traffic ? niche.traffic.toLocaleString() : "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-green-400 text-sm font-medium">{niche.estimated_revenue ? "€" + niche.estimated_revenue.toLocaleString() : "—"}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <StatusBadge status={niche.status as NicheStatus} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

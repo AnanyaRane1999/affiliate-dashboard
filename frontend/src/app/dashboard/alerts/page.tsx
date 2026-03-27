@@ -1,200 +1,213 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import api, { extractData } from "@/services/api";
-import { Alert, AlertSeverity } from "@/types";
+import { AgentStatusInfo, AgentName } from "@/types";
 import { API_ROUTES } from "@/lib/mock-data";
-import { Bell, CheckCircle, AlertTriangle, AlertOctagon, Info } from "lucide-react";
+import { Bot, RefreshCw, Clock, Activity, AlertTriangle } from "lucide-react";
 import { clsx } from "clsx";
 
-const MOCK_ALERTS: Alert[] = [
-  { id: 1, type: "spend_spike", message: "Camping Anfänger campaign CPC exceeded €2.50 threshold", severity: "critical", resolved: false, created_at: "2026-03-26T09:30:00Z" },
-  { id: 2, type: "tracking_failure", message: "GA4 tracking not firing on kitesurfen.starterkit.de/starter-kit", severity: "warning", resolved: false, created_at: "2026-03-26T08:15:00Z" },
-  { id: 3, type: "link_broken", message: "2 affiliate links returning 404 on Camping niche", severity: "warning", resolved: false, created_at: "2026-03-26T07:00:00Z" },
-  { id: 4, type: "budget_low", message: "Kitesurfen niche budget is 80% consumed this month", severity: "info", resolved: false, created_at: "2026-03-25T18:00:00Z" },
-  { id: 5, type: "agent_error", message: "Research Agent failed to connect to SerpAPI — retrying", severity: "warning", resolved: true, created_at: "2026-03-25T12:00:00Z" },
+const MOCK_AGENT_STATUS: AgentStatusInfo[] = [
+  { agent_name: "research",       status: "idle",    last_run: "2026-03-27T08:00:00Z", last_action: "Scored 15 German hobby niches",            run_count_today: 3, error_message: null },
+  { agent_name: "business_case",  status: "idle",    last_run: "2026-03-27T08:15:00Z", last_action: "Generated financial model for Kitesurfen", run_count_today: 3, error_message: null },
+  { agent_name: "site_builder",   status: "running", last_run: "2026-03-27T09:30:00Z", last_action: "Generating pages for Fotografie niche",     run_count_today: 2, error_message: null },
+  { agent_name: "link_builder",   status: "idle",    last_run: "2026-03-27T09:00:00Z", last_action: "Refreshed 102 Amazon.de affiliate links",   run_count_today: 4, error_message: null },
+  { agent_name: "ads_manager",    status: "error",   last_run: "2026-03-27T07:00:00Z", last_action: "Failed — Google Ads credentials missing",   run_count_today: 1, error_message: "Google Ads API credentials not configured" },
+  { agent_name: "controller",     status: "idle",    last_run: "2026-03-27T09:45:00Z", last_action: "Budget reallocation check completed",        run_count_today: 6, error_message: null },
 ];
 
-const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; className: string; icon: React.ElementType; bg: string }> = {
-  critical: { label: "Critical", className: "text-red-400 border-red-700",    icon: AlertOctagon,  bg: "bg-red-900/20 border-red-700/50" },
-  warning:  { label: "Warning",  className: "text-yellow-400 border-yellow-700", icon: AlertTriangle, bg: "bg-yellow-900/20 border-yellow-700/50" },
-  info:     { label: "Info",     className: "text-blue-400 border-blue-700",   icon: Info,          bg: "bg-blue-900/20 border-blue-700/50" },
+const AGENT_LABELS: Record<AgentName, string> = {
+  research:      "Research Agent",
+  business_case: "Business Case Agent",
+  site_builder:  "Site Builder Agent",
+  link_builder:  "Link Builder Agent",
+  ads_manager:   "Ads Manager Agent",
+  controller:    "Controller Agent",
 };
 
-export default function AlertsPage() {
-  const queryClient = useQueryClient();
-  const [severityFilter, setSeverityFilter] = useState<AlertSeverity | "all">("all");
-  const [showResolved, setShowResolved] = useState(false);
+const AGENT_DESCRIPTIONS: Record<AgentName, string> = {
+  research:      "Discovers profitable German hobby niches using SerpAPI",
+  business_case: "Models CAC, LTV, margin and payback period per niche",
+  site_builder:  "Generates German SEO pages and publishes subdomains",
+  link_builder:  "Finds Amazon.de products and builds affiliate bundles",
+  ads_manager:   "Creates and manages Google Ads campaigns",
+  controller:    "Orchestrates all agents and manages budget allocation",
+};
 
-  const { data: alerts, isLoading } = useQuery({
-    queryKey: ["alerts"],
+const AGENT_COLORS: Record<AgentName, string> = {
+  research:      "from-blue-600/20 to-blue-900/10 border-blue-700/50",
+  business_case: "from-purple-600/20 to-purple-900/10 border-purple-700/50",
+  site_builder:  "from-yellow-600/20 to-yellow-900/10 border-yellow-700/50",
+  link_builder:  "from-orange-600/20 to-orange-900/10 border-orange-700/50",
+  ads_manager:   "from-pink-600/20 to-pink-900/10 border-pink-700/50",
+  controller:    "from-cyan-600/20 to-cyan-900/10 border-cyan-700/50",
+};
+
+const ICON_COLORS: Record<AgentName, string> = {
+  research:      "text-blue-400",
+  business_case: "text-purple-400",
+  site_builder:  "text-yellow-400",
+  link_builder:  "text-orange-400",
+  ads_manager:   "text-pink-400",
+  controller:    "text-cyan-400",
+};
+
+export default function AgentsPage() {
+  const { data: agents, isLoading, refetch } = useQuery({
+    queryKey: ["agent-status"],
     queryFn: async () => {
       try {
-        const res = await api.get(API_ROUTES.alerts);
-        return extractData<Alert[]>(res);
+        const res = await api.get(API_ROUTES.agentStatus);
+        return extractData<AgentStatusInfo[]>(res);
       } catch {
-        return MOCK_ALERTS;
+        return MOCK_AGENT_STATUS;
       }
     },
     refetchInterval: 10000,
   });
 
-  const resolveMutation = useMutation({
-    mutationFn: (id: number) => api.patch(API_ROUTES.alertResolve(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-    },
-    onError: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-    },
+  const controllerMutation = useMutation({
+    mutationFn: () => api.post(API_ROUTES.runController),
+    onSuccess: () => refetch(),
+    onError: () => refetch(),
   });
 
-  const displayAlerts = alerts || MOCK_ALERTS;
-  const filtered = displayAlerts.filter((a) => {
-    const matchSeverity = severityFilter === "all" || a.severity === severityFilter;
-    const matchResolved = showResolved ? true : !a.resolved;
-    return matchSeverity && matchResolved;
-  });
+  const displayAgents = agents || MOCK_AGENT_STATUS;
+  const runningCount = displayAgents.filter((a) => a.status === "running").length;
+  const errorCount = displayAgents.filter((a) => a.status === "error").length;
+  const idleCount = displayAgents.filter((a) => a.status === "idle").length;
 
-  const criticalCount = displayAlerts.filter((a) => a.severity === "critical" && !a.resolved).length;
-  const warningCount = displayAlerts.filter((a) => a.severity === "warning" && !a.resolved).length;
-  const unresolvedCount = displayAlerts.filter((a) => !a.resolved).length;
-
-  function formatTime(ts: string) {
-    return new Date(ts).toLocaleString("de-DE", {
-      day: "2-digit", month: "2-digit",
-      hour: "2-digit", minute: "2-digit",
+  function formatTime(ts: string | null) {
+    if (!ts) return "Never";
+    return new Date(ts).toLocaleTimeString("de-DE", {
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
     });
+  }
+
+  function StatusDot({ status }: { status: string }) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className={clsx(
+          "w-2.5 h-2.5 rounded-full",
+          status === "running" ? "bg-green-500 status-pulse" :
+          status === "error"   ? "bg-red-500" : "bg-gray-500"
+        )} />
+        <span className={clsx(
+          "text-sm font-medium capitalize",
+          status === "running" ? "text-green-400" :
+          status === "error"   ? "text-red-400" : "text-gray-400"
+        )}>
+          {status}
+        </span>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Alerts</h1>
+          <h1 className="text-2xl font-bold text-white">Agent Status</h1>
           <p className="text-gray-400 mt-1">
-            {unresolvedCount} unresolved — {criticalCount} critical
+            {runningCount} running — {idleCount} idle — {errorCount} errors
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
-          <span className="text-gray-400 text-xs">Auto-refresh 10s</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 status-pulse" />
+            Auto-refresh 10s
+          </div>
+          <button
+            onClick={() => controllerMutation.mutate()}
+            disabled={controllerMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-900/30 border border-cyan-700 text-cyan-400 rounded-lg hover:bg-cyan-900/50 transition-colors text-sm disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={clsx(controllerMutation.isPending && "animate-spin")} />
+            Run Controller
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-4">
-          <p className="text-red-400 text-sm">Critical</p>
-          <p className="text-2xl font-bold text-red-400 mt-1">{criticalCount}</p>
-        </div>
-        <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-xl p-4">
-          <p className="text-yellow-400 text-sm">Warnings</p>
-          <p className="text-2xl font-bold text-yellow-400 mt-1">{warningCount}</p>
+        <div className="bg-green-900/20 border border-green-700/50 rounded-xl p-4">
+          <p className="text-green-400 text-sm">Running</p>
+          <p className="text-2xl font-bold text-green-400 mt-1">{runningCount}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-gray-400 text-sm">Total Unresolved</p>
-          <p className="text-2xl font-bold text-white mt-1">{unresolvedCount}</p>
+          <p className="text-gray-400 text-sm">Idle</p>
+          <p className="text-2xl font-bold text-white mt-1">{idleCount}</p>
+        </div>
+        <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-4">
+          <p className="text-red-400 text-sm">Errors</p>
+          <p className="text-2xl font-bold text-red-400 mt-1">{errorCount}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        {(["all", "critical", "warning", "info"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setSeverityFilter(f)}
-            className={clsx(
-              "px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors",
-              severityFilter === f
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            )}
-          >
-            {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-        <button
-          onClick={() => setShowResolved(!showResolved)}
-          className={clsx(
-            "px-3 py-2 rounded-lg text-xs font-medium transition-colors ml-auto",
-            showResolved
-              ? "bg-gray-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-          )}
-        >
-          {showResolved ? "Hide Resolved" : "Show Resolved"}
-        </button>
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-800">
-          <Bell size={16} className="text-blue-400" />
-          <span className="text-white font-medium">Alert Feed</span>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <div className="skeleton h-5 w-40 mb-3" />
+              <div className="skeleton h-4 w-full mb-2" />
+              <div className="skeleton h-4 w-32" />
+            </div>
+          ))}
         </div>
-
-        {isLoading ? (
-          <div className="p-6 space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton h-16 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <CheckCircle size={32} className="mx-auto mb-2 text-green-700" />
-            <p>No alerts found! All clear.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-800">
-            {filtered.map((alert) => {
-              const config = SEVERITY_CONFIG[alert.severity];
-              const Icon = config.icon;
-              return (
-                <div
-                  key={alert.id}
-                  className={clsx(
-                    "flex items-start gap-4 px-6 py-4 transition-colors",
-                    alert.resolved ? "opacity-50" : "hover:bg-gray-800/30"
-                  )}
-                >
-                  <div className={clsx("p-2 rounded-lg border mt-0.5 shrink-0", config.bg)}>
-                    <Icon size={16} className={config.className.split(" ")[0]} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {displayAgents.map((agent) => (
+            <div
+              key={agent.agent_name}
+              className={clsx(
+                "bg-gradient-to-br border rounded-xl p-6",
+                AGENT_COLORS[agent.agent_name]
+              )}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-900/50 rounded-lg flex items-center justify-center">
+                    <Bot size={20} className={ICON_COLORS[agent.agent_name]} />
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={clsx(
-                        "text-xs font-medium px-2 py-0.5 rounded-full border",
-                        config.className
-                      )}>
-                        {config.label}
-                      </span>
-                      <span className="text-gray-500 text-xs">{alert.type.replace(/_/g, " ")}</span>
-                      {alert.resolved && (
-                        <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">
-                          Resolved
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-white text-sm">{alert.message}</p>
-                    <p className="text-gray-500 text-xs mt-1">{formatTime(alert.created_at)}</p>
+                  <div>
+                    <h3 className="text-white font-semibold">
+                      {AGENT_LABELS[agent.agent_name]}
+                    </h3>
+                    <p className="text-gray-400 text-xs mt-0.5">
+                      {AGENT_DESCRIPTIONS[agent.agent_name]}
+                    </p>
                   </div>
-
-                  {!alert.resolved && (
-                    <button
-                      onClick={() => resolveMutation.mutate(alert.id)}
-                      disabled={resolveMutation.isPending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-xs shrink-0 disabled:opacity-50"
-                    >
-                      <CheckCircle size={12} />
-                      Resolve
-                    </button>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                <StatusDot status={agent.status} />
+              </div>
+
+              {agent.error_message && (
+                <div className="flex items-center gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2 mb-3">
+                  <AlertTriangle size={14} className="text-red-400 shrink-0" />
+                  <p className="text-red-400 text-xs">{agent.error_message}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <Activity size={12} className="text-gray-500" />
+                  <span className="text-gray-500">Last action:</span>
+                  <span className="text-gray-300 truncate">{agent.last_action || "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Clock size={12} className="text-gray-500" />
+                  <span className="text-gray-500">Last run:</span>
+                  <span className="text-gray-300">{formatTime(agent.last_run)}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <RefreshCw size={12} className="text-gray-500" />
+                  <span className="text-gray-500">Runs today:</span>
+                  <span className="text-gray-300">{agent.run_count_today}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
