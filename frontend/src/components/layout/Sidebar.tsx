@@ -1,11 +1,10 @@
 "use client";
-
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutDashboard, Globe, FileText, Link2, Megaphone,
   Wallet, Activity, Bell, ClipboardCheck, ShieldAlert,
-  Bot, ChevronLeft, ChevronRight, Zap,
+  Bot, ChevronLeft, ChevronRight, Zap, ClipboardList,
 } from "lucide-react";
 import { useUIStore } from "@/store";
 import { clsx } from "clsx";
@@ -21,7 +20,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/alerts",    label: "Alerts",          icon: Bell },
   { href: "/dashboard/approvals", label: "Approvals",       icon: ClipboardCheck },
   { href: "/dashboard/overrides", label: "Override",        icon: ShieldAlert },
-  { href: "/dashboard/agents",    label: "Agent Status",    icon: Bot },
+{ href: "/dashboard/qa",          label: "QA Checklist",    icon: ClipboardCheck },
 ];
 
 export default function Sidebar() {

@@ -1,70 +1,74 @@
 version: "3.9"
 
 services:
-
-  db:
-    image: postgres:15
-    container_name: affiliate_db
-    restart: always
+  # ── PostgreSQL ─────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: affiliate-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: affiliate_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ── Redis ──────────────────────────────────────────────
   redis:
-    image: redis:7
-    container_name: affiliate_redis
-    restart: always
+    image: redis:7-alpine
+    container_name: affiliate-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ── FastAPI Backend ────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: affiliate_backend
-    restart: always
+    container_name: affiliate-backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/affiliate_db
+      REDIS_URL: redis://redis:6379/0
     depends_on:
-      - db
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend:/app
 
-  celery_worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: affiliate_celery
-    restart: always
-    command: celery -A celery_app worker --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - ./backend:/app
-
+  # ── Next.js Frontend ───────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: affiliate_frontend
-    restart: always
+    container_name: affiliate-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    env_file:
-      - .env
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  redis_data:
