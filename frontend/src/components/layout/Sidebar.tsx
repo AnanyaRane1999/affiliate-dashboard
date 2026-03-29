@@ -49,14 +49,13 @@ export default function Sidebar() {
       {/* Nav Links */}
       <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            pathname === href ||
-            (href !== "/dashboard" && pathname.startsWith(href));
+          const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           const isAlerts = href === "/dashboard/alerts";
+          const isApprovals = href === "/dashboard/approvals";
           return (
             <Link key={href} href={href}
               className={clsx(
-                "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg mb-0.5 transition-colors relative group",
+                "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-150 relative group",
                 isActive
                   ? "bg-blue-600/20 text-blue-400 border border-blue-600/30"
                   : "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
@@ -70,12 +69,10 @@ export default function Sidebar() {
                 )}
               </div>
               {sidebarOpen && (
-                <span className="text-sm font-medium whitespace-nowrap">
-                  {label}
-                </span>
+                <span className="text-sm font-medium whitespace-nowrap">{label}</span>
               )}
               {!sidebarOpen && (
-                <div className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-gray-700">
+                <div className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-gray-700 shadow-lg">
                   {label}
                 </div>
               )}
@@ -83,6 +80,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Bottom status */}
+      {sidebarOpen && (
+        <div className="px-4 py-3 border-t border-gray-800">
+          <div className="flex items-center gap-2 bg-green-900/20 border border-green-700/30 rounded-lg px-3 py-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 status-pulse shrink-0" />
+            <div>
+              <p className="text-green-400 text-xs font-medium">Platform Active</p>
+              <p className="text-gray-500 text-xs">6 agents running</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Collapse toggle */}
       <button onClick={toggleSidebar}
