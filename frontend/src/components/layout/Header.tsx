@@ -4,9 +4,13 @@ import { Bell, Search, Sun, Moon } from "lucide-react";
 import { useUIStore } from "@/store";
 import { clsx } from "clsx";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import i18n from "@/lib/i18n";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const router = useRouter();
+  const { t } = useTranslation();
   const {
     sidebarOpen,
     unreadAlertCount,
@@ -15,6 +19,23 @@ export default function Header() {
     theme,
     setTheme,
   } = useUIStore();
+
+  const [lang, setLang] = useState<"de" | "en">("de");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("lang") as "de" | "en" | null;
+    if (saved) {
+      setLang(saved);
+      i18n.changeLanguage(saved);
+    }
+  }, []);
+
+  function toggleLang() {
+    const newLang = lang === "de" ? "en" : "de";
+    setLang(newLang);
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("lang", newLang);
+  }
 
   function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && globalSearchQuery.trim()) {
@@ -32,7 +53,7 @@ export default function Header() {
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
         <input
           type="text"
-          placeholder="Search niches, campaigns, alerts... (Enter)"
+          placeholder={t("search_placeholder")}
           value={globalSearchQuery}
           onChange={(e) => setGlobalSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
@@ -45,8 +66,20 @@ export default function Header() {
       {/* Platform status */}
       <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-green-500 status-pulse" />
-        <span>Platform Active</span>
+        <span>{t("platform_active")}</span>
       </div>
+
+      {/* Language Toggle */}
+      <button
+        onClick={toggleLang}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+      >
+        {lang === "de" ? (
+          <><span>🇩🇪</span><span>DE</span></>
+        ) : (
+          <><span>🇬🇧</span><span>EN</span></>
+        )}
+      </button>
 
       {/* Theme toggle */}
       <button

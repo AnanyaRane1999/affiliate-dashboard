@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
+import I18nProvider from "@/lib/i18n-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,11 +17,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${inter.className} bg-gray-950 text-gray-100 antialiased`}
-      >
-        <QueryProvider>{children}</QueryProvider>
+    <html lang="de">
+      <body className={`${inter.className} bg-gray-950 text-gray-100 antialiased`}>
+        <QueryProvider>
+          <I18nProvider>
+            {children}
+          </I18nProvider>
+        </QueryProvider>
       </body>
     </html>
   );
