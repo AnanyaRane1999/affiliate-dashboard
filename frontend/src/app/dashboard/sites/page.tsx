@@ -27,15 +27,27 @@ export default function SitesPage() {
     queryFn: async () => {
       try {
         const res = await api.get(API_ROUTES.sites);
-        return extractData<Site[]>(res);
+        const data = extractData<Site[]>(res);
+	return data.map((n: any) => ({
+	  id: n.id,
+	  niche_id: n.id,
+          niche_name: n.name,
+          name: n.name,
+          subdomain: n.subdomain,
+          status: n.status,
+          page_count: n.page_count || 0,
+          traffic_30d: n.traffic || 0,
+          last_published: n.updated_at,
+          created_at: n.created_at,
+	}));
       } catch {
-        return MOCK_SITES;
+        return [];
       }
     },
     refetchInterval: 60000,
   });
 
-  const displaySites = sites || MOCK_SITES;
+  const displaySites = sites || [];
 
   const filtered = displaySites.filter((s) => {
     const matchSearch = (s.niche_name || s.name || "").toLowerCase().includes(search.toLowerCase()) ||
