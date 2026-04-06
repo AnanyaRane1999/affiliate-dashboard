@@ -42,3 +42,6 @@ backend/package-lock.json
 files.zip
 requirements.txt
 .env
+frontend/.next/
+frontend/node_modules/
+backend/node_modules/
