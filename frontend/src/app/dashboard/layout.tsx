@@ -19,10 +19,12 @@ export default function DashboardLayout({
       <main
         className={clsx(
           "transition-all duration-300 pt-16 min-h-screen",
-          sidebarOpen ? "ml-64" : "ml-16"
+          // Mobile: no margin (sidebar overlays)
+          // Desktop: margin based on sidebar state
+          sidebarOpen ? "md:ml-64" : "md:ml-16"
         )}
       >
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6">{children}</div>
       </main>
     </div>
   );

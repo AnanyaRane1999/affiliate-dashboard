@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Sun, Moon } from "lucide-react";
+import { Bell, Search, Sun, Moon, Menu } from "lucide-react";
 import { useUIStore } from "@/store";
 import { clsx } from "clsx";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ export default function Header() {
   const { t } = useTranslation();
   const {
     sidebarOpen,
+    toggleSidebar,
     unreadAlertCount,
     globalSearchQuery,
     setGlobalSearchQuery,
@@ -45,9 +46,20 @@ export default function Header() {
 
   return (
     <header className={clsx(
-      "fixed top-0 right-0 h-16 bg-gray-900/95 backdrop-blur border-b border-gray-800 z-30 flex items-center px-4 gap-4 transition-all duration-300",
-      sidebarOpen ? "left-64" : "left-16"
+      "fixed top-0 right-0 h-16 bg-gray-900/95 backdrop-blur border-b border-gray-800 z-30 flex items-center px-4 gap-3 transition-all duration-300",
+      // Mobile: always full width (sidebar overlays)
+      // Desktop: shift based on sidebar state
+      sidebarOpen ? "left-0 md:left-64" : "left-0 md:left-16"
     )}>
+
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={toggleSidebar}
+        className="md:hidden text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-800 shrink-0"
+      >
+        <Menu size={20} />
+      </button>
+
       {/* Search bar */}
       <div className="flex-1 max-w-md relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -63,7 +75,7 @@ export default function Header() {
 
       <div className="flex-1" />
 
-      {/* Platform status */}
+      {/* Platform status — hidden on mobile */}
       <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-green-500 status-pulse" />
         <span>{t("platform_active")}</span>
@@ -72,12 +84,12 @@ export default function Header() {
       {/* Language Toggle */}
       <button
         onClick={toggleLang}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
       >
         {lang === "de" ? (
-          <><span>🇩🇪</span><span>DE</span></>
+          <><span>🇩🇪</span><span className="hidden sm:inline">DE</span></>
         ) : (
-          <><span>🇬🇧</span><span>EN</span></>
+          <><span>🇬🇧</span><span className="hidden sm:inline">EN</span></>
         )}
       </button>
 

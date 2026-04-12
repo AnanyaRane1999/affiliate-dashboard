@@ -63,50 +63,53 @@ export default function ActivityPage() {
   function formatTime(timestamp: string) {
     return new Date(timestamp).toLocaleString("de-DE", {
       day: "2-digit", month: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour: "2-digit", minute: "2-digit",
     });
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4">
+
+      {/* Header — stacks on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-white">Agent Activity Log</h1>
-          <p className="text-gray-400 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Agent Activity Log</h1>
+          <p className="text-gray-400 mt-0.5 text-sm">
             {filtered.length} entries — live feed of all agent actions
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 status-pulse" />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 status-pulse shrink-0" />
             Auto-refresh 10s
           </div>
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-xs shrink-0"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={13} />
             Refresh
           </button>
         </div>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
+      {/* Filter buttons — horizontally scrollable on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => handleFilterChange("all")}
           className={clsx(
-            "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+            "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0",
             filter === "all" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
           )}
         >
-          All Agents ({displayLogs.length})
+          All ({displayLogs.length})
         </button>
         {(Object.keys(AGENT_LABELS) as AgentName[]).map((agent) => (
           <button
             key={agent}
             onClick={() => handleFilterChange(agent)}
             className={clsx(
-              "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+              "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0",
               filter === agent ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
             )}
           >
@@ -115,11 +118,12 @@ export default function ActivityPage() {
         ))}
       </div>
 
+      {/* Feed card */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-800">
-          <Activity size={16} className="text-blue-400" />
-          <span className="text-white font-medium">Live Agent Feed</span>
-          <span className="ml-auto text-gray-500 text-sm">Page {page} of {totalPages || 1}</span>
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800">
+          <Activity size={15} className="text-blue-400 shrink-0" />
+          <span className="text-white font-medium text-sm">Live Agent Feed</span>
+          <span className="ml-auto text-gray-500 text-xs">Page {page} of {totalPages || 1}</span>
         </div>
 
         {isError ? (
@@ -127,44 +131,47 @@ export default function ActivityPage() {
         ) : isLoading ? (
           <div className="divide-y divide-gray-800">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-start gap-4 px-6 py-4">
-                <div className="skeleton h-6 w-6 rounded-full" />
+              <div key={i} className="flex items-start gap-3 px-4 py-3">
+                <div className="skeleton h-5 w-5 rounded-full shrink-0" />
                 <div className="flex-1">
-                  <div className="skeleton h-4 w-48 mb-2" />
-                  <div className="skeleton h-3 w-64" />
+                  <div className="skeleton h-4 w-40 mb-2" />
+                  <div className="skeleton h-3 w-56" />
                 </div>
-                <div className="skeleton h-4 w-20" />
+                <div className="skeleton h-3 w-16 shrink-0" />
               </div>
             ))}
           </div>
         ) : paginated.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No logs found.</div>
+          <div className="text-center py-12 text-gray-500 text-sm">No logs found.</div>
         ) : (
           <>
             <div className="divide-y divide-gray-800">
               {paginated.map((log) => (
-                <div key={log.id} className="flex items-start gap-4 px-6 py-4 hover:bg-gray-800/30 transition-colors">
-                  <span className="text-lg mt-0.5 shrink-0">
+                <div key={log.id} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-800/30 transition-colors">
+                  {/* Status icon */}
+                  <span className="text-base mt-0.5 shrink-0">
                     {log.status === "success" ? "✅" : log.status === "error" ? "❌" : "⚠️"}
                   </span>
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <span className={clsx(
-                        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0",
                         AGENT_COLORS[log.agent_name]
                       )}>
                         {AGENT_LABELS[log.agent_name]}
                       </span>
-                      <span className="text-white text-sm font-medium">{log.action}</span>
+                      <span className="text-white text-xs font-medium truncate">{log.action}</span>
                     </div>
                     <p className={clsx(
-                      "text-sm",
+                      "text-xs truncate",
                       log.status === "success" ? "text-green-400" :
                       log.status === "error" ? "text-red-400" : "text-yellow-400"
                     )}>
                       {log.result}
                     </p>
                   </div>
+                  {/* Timestamp — shorter format on mobile */}
                   <div className="text-right shrink-0">
                     <p className="text-gray-400 text-xs">{formatTime(log.timestamp)}</p>
                   </div>

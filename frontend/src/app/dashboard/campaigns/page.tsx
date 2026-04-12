@@ -69,49 +69,53 @@ export default function CampaignsPage() {
   const activeCampaigns = displayCampaigns.filter((c) => c.status === "active").length;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-white">Campaigns</h1>
-          <p className="text-gray-400 mt-1">
-            {activeCampaigns} active campaigns — €{totalSpend.toFixed(2)} total spend
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Campaigns</h1>
+          <p className="text-gray-400 mt-0.5 text-sm">
+            {activeCampaigns} active — €{totalSpend.toFixed(2)} total spend
           </p>
         </div>
       </div>
 
+      {/* Action message */}
       {actionMsg && (
-        <div className="flex items-center gap-2 bg-blue-900/30 border border-blue-700 rounded-lg px-4 py-3">
-          <TrendingUp size={16} className="text-blue-400" />
-          <span className="text-blue-400 text-sm">{actionMsg}</span>
+        <div className="flex items-center gap-2 bg-blue-900/30 border border-blue-700 rounded-lg px-3 py-2">
+          <TrendingUp size={14} className="text-blue-400 shrink-0" />
+          <span className="text-blue-400 text-xs">{actionMsg}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-gray-400 text-sm">Total Campaigns</p>
-          <p className="text-2xl font-bold text-white mt-1">{displayCampaigns.length}</p>
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4">
+          <p className="text-gray-400 text-xs">Total</p>
+          <p className="text-2xl font-bold text-white mt-0.5">{displayCampaigns.length}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-gray-400 text-sm">Active</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{activeCampaigns}</p>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4">
+          <p className="text-gray-400 text-xs">Active</p>
+          <p className="text-2xl font-bold text-green-400 mt-0.5">{activeCampaigns}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-gray-400 text-sm">Total Spend</p>
-          <p className="text-2xl font-bold text-white mt-1">€{totalSpend.toFixed(2)}</p>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4">
+          <p className="text-gray-400 text-xs">Total Spend</p>
+          <p className="text-2xl font-bold text-white mt-0.5">€{totalSpend.toFixed(2)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-gray-400 text-sm">Total Clicks</p>
-          <p className="text-2xl font-bold text-white mt-1">{totalClicks.toLocaleString()}</p>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4">
+          <p className="text-gray-400 text-xs">Total Clicks</p>
+          <p className="text-2xl font-bold text-white mt-0.5">{totalClicks.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="flex gap-2">
+      {/* Filter buttons */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {["all", "active", "paused", "draft", "ended"].map((f) => (
           <button
             key={f}
             onClick={() => setStatusFilter(f)}
             className={clsx(
-              "px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors",
+              "px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors whitespace-nowrap shrink-0",
               statusFilter === f
                 ? "bg-blue-600 text-white"
                 : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -122,19 +126,23 @@ export default function CampaignsPage() {
         ))}
       </div>
 
+      {/* Table — scrollable on mobile */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="sm:hidden px-4 py-2 bg-gray-800/50 border-b border-gray-800">
+          <span className="text-gray-500 text-xs">← Scroll sideways to see all columns →</span>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-800">
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Campaign</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Status</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Budget/day</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Spend Today</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">CTR</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">CPC</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">ROAS</th>
-                <th className="text-left text-xs font-medium text-gray-400 uppercase px-6 py-4">Actions</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">Campaign</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">Status</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">Budget/day</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">Spend Today</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">CTR</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">CPC</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">ROAS</th>
+                <th className="text-left text-xs font-medium text-gray-400 uppercase px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -142,7 +150,7 @@ export default function CampaignsPage() {
                 [...Array(3)].map((_, i) => (
                   <tr key={i}>
                     {[...Array(8)].map((_, j) => (
-                      <td key={j} className="px-6 py-4">
+                      <td key={j} className="px-4 py-3">
                         <div className="skeleton h-4 w-20" />
                       </td>
                     ))}
@@ -151,10 +159,10 @@ export default function CampaignsPage() {
               )}
               {!isLoading && filtered.map((campaign) => (
                 <tr key={campaign.id} className="hover:bg-gray-800/50 transition-colors">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-900/30 border border-purple-700/30 rounded-lg flex items-center justify-center shrink-0">
-                        <Megaphone size={14} className="text-purple-400" />
+                      <div className="w-7 h-7 bg-purple-900/30 border border-purple-700/30 rounded-lg flex items-center justify-center shrink-0">
+                        <Megaphone size={12} className="text-purple-400" />
                       </div>
                       <div>
                         <p className="text-white text-sm font-medium">{campaign.name}</p>
@@ -162,34 +170,24 @@ export default function CampaignsPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <span className={clsx(
-                      "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
                       STATUS_CONFIG[campaign.status].className
                     )}>
                       {STATUS_CONFIG[campaign.status].label}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-white text-sm">€{campaign.daily_budget.toFixed(2)}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-white text-sm">€{campaign.spend_today.toFixed(2)}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-white text-sm">{(campaign.ctr * 100).toFixed(2)}%</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={clsx(
-                      "text-sm font-medium",
-                      campaign.cpc > 1.5 ? "text-red-400" : "text-green-400"
-                    )}>
+                  <td className="px-4 py-3"><span className="text-white text-sm">€{campaign.daily_budget.toFixed(2)}</span></td>
+                  <td className="px-4 py-3"><span className="text-white text-sm">€{campaign.spend_today.toFixed(2)}</span></td>
+                  <td className="px-4 py-3"><span className="text-white text-sm">{(campaign.ctr * 100).toFixed(2)}%</span></td>
+                  <td className="px-4 py-3">
+                    <span className={clsx("text-sm font-medium", campaign.cpc > 1.5 ? "text-red-400" : "text-green-400")}>
                       €{campaign.cpc.toFixed(2)}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={clsx(
-                      "text-sm font-bold",
+                  <td className="px-4 py-3">
+                    <span className={clsx("text-sm font-bold",
                       campaign.roas
                         ? campaign.roas >= 3 ? "text-green-400" : "text-yellow-400"
                         : "text-gray-500"
@@ -197,35 +195,33 @@ export default function CampaignsPage() {
                       {campaign.roas ? campaign.roas.toFixed(1) + "x" : "—"}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {campaign.status === "active" ? (
-                        <button
-                          onClick={() => pauseMutation.mutate(campaign.id)}
-                          disabled={pauseMutation.isPending}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-900/30 border border-yellow-700 text-yellow-400 rounded-lg hover:bg-yellow-900/50 transition-colors text-xs disabled:opacity-50"
-                        >
-                          <Pause size={12} />
-                          Pause
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => resumeMutation.mutate(campaign.id)}
-                          disabled={resumeMutation.isPending}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900/30 border border-green-700 text-green-400 rounded-lg hover:bg-green-900/50 transition-colors text-xs disabled:opacity-50"
-                        >
-                          <Play size={12} />
-                          Resume
-                        </button>
-                      )}
-                    </div>
+                  <td className="px-4 py-3">
+                    {campaign.status === "active" ? (
+                      <button
+                        onClick={() => pauseMutation.mutate(campaign.id)}
+                        disabled={pauseMutation.isPending}
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-yellow-900/30 border border-yellow-700 text-yellow-400 rounded-lg hover:bg-yellow-900/50 transition-colors text-xs disabled:opacity-50 whitespace-nowrap"
+                      >
+                        <Pause size={11} />
+                        Pause
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => resumeMutation.mutate(campaign.id)}
+                        disabled={resumeMutation.isPending}
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-green-900/30 border border-green-700 text-green-400 rounded-lg hover:bg-green-900/50 transition-colors text-xs disabled:opacity-50 whitespace-nowrap"
+                      >
+                        <Play size={11} />
+                        Resume
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
               {!isLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-500">
-                    <AlertTriangle size={32} className="mx-auto mb-2 text-gray-700" />
+                    <AlertTriangle size={28} className="mx-auto mb-2 text-gray-700" />
                     No campaigns found.
                   </td>
                 </tr>

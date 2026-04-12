@@ -16,7 +16,8 @@ interface UIStore {
 }
 
 export const useUIStore = create<UIStore>((set) => ({
-  sidebarOpen: true,
+  // ✅ Start closed on mobile, open on desktop
+  sidebarOpen: typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   theme: "dark",
   unreadAlertCount: 0,
   dateRange: "30d",
