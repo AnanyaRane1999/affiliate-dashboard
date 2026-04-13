@@ -30,24 +30,21 @@ export default function SitesPage() {
   const { data: sites, isLoading, isError, refetch } = useQuery({
     queryKey: ["sites"],
     queryFn: async () => {
-      try {
-        const res = await api.get(API_ROUTES.sites);
-        const data = extractData<Site[]>(res);
-	return data.map((n: any) => ({
-	  id: n.id,
-	  niche_id: n.id,
-          niche_name: n.name,
-          name: n.name,
-          subdomain: n.subdomain,
-          status: n.status,
+            const res = await fetch('https://api.bestehobby.de/api/v1/sites');
+        const json = await res.json();
+        const raw = json.data || [];
+        return raw.map((n: any) => ({
+          id: n.id,
+          niche_id: n.id,
+          niche_name: n.name || "",
+          name: n.name || "",
+          subdomain: n.subdomain || "",
+          status: n.status || "live",
           page_count: n.page_count || 0,
-          traffic_30d: n.traffic || 0,
-          last_published: n.updated_at,
-          created_at: n.created_at,
-	}));
-      } catch {
-        return [];
-      }
+          traffic_30d: n.traffic_30d || 0,
+          last_published: n.updated_at || null,
+          created_at: n.created_at || null,
+        }));
     },
     refetchInterval: 30000,
   });
