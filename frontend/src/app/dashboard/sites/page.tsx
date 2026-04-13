@@ -31,7 +31,6 @@ export default function SitesPage() {
     queryKey: ["sites"],
     queryFn: async () => {
       try {
-<<<<<<< Updated upstream
         const res = await api.get(API_ROUTES.sites);
         const data = extractData<Site[]>(res);
 	return data.map((n: any) => ({
@@ -46,10 +45,6 @@ export default function SitesPage() {
           last_published: n.updated_at,
           created_at: n.created_at,
 	}));
-=======
-        const res = await api.get("/api/v1/sites");
-        return extractData<Site[]>(res);
->>>>>>> Stashed changes
       } catch {
         return [];
       }
@@ -72,12 +67,8 @@ export default function SitesPage() {
     },
   });
 
-<<<<<<< Updated upstream
   const displaySites = sites || [];
 
-=======
-  const displaySites = sites || MOCK_SITES;
->>>>>>> Stashed changes
   const filtered = displaySites.filter((s) => {
     const name = s.niche_name || "";
     const sub = s.subdomain || "";
